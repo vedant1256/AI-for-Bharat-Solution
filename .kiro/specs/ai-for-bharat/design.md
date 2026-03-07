@@ -1,8 +1,11 @@
-# Design Document: AI for Bharat Content Ecosystem
+Here is the complete and updated content for your **`design.md`** file. You can copy the entire block below and paste it directly into your file:
+
+```markdown
+# Design Document: DigitalBharat Studio
 
 ## Overview
 
-The AI for Bharat Content Ecosystem is a comprehensive platform built using Streamlit for the frontend interface, Python for backend logic, and cloud databases for data persistence. The system integrates five core AI-powered components: multilingual script generation, visual content creation, analytics dashboard, trend detection, and intelligent content planning. The architecture prioritizes accessibility for Tier-2, Tier-3, and rural Indian content creators through optimized performance and offline capabilities.
+**DigitalBharat Studio** is a comprehensive, multi-cloud content workflow platform built using Streamlit for the frontend and Python for the backend. The system integrates 9 core AI-powered components: AI Content Pipeline, Script Genius, Brand Identity Kit, AI Visual Studio, Smart Content Planner, Bharat Analytics Hub, Trend Radar, AI Saarthi (Voice Co-Pilot), and AI System Controls. The architecture prioritizes enterprise-grade resilience via a Multi-Cloud Fallback system (AWS Bedrock + Google Gemini), explicitly tailored for Tier-2, Tier-3, and rural Indian content creators.
 
 ## Architecture
 
@@ -12,450 +15,252 @@ The AI for Bharat Content Ecosystem is a comprehensive platform built using Stre
 graph TB
     subgraph "Frontend Layer"
         UI[Streamlit Web Interface]
-        Cache[Local Cache/Offline Storage]
+        State[Session State Management]
     end
     
-    subgraph "Backend Services"
-        API[Python FastAPI Backend]
-        Auth[Authentication Service]
-        ContentGen[Content Generation Engine]
-        Analytics[Analytics Engine]
+    subgraph "Core Backend Services"
+        Router[Multi-Cloud AI Router]
+        Sec[Env Security Manager]
+        Audio[Voice/Audio Processor]
+        Analytics[Analytics & Sentiment Engine]
         Scheduler[Content Scheduler]
-        TrendEngine[Trend Detection Engine]
+        Radar[Trend Radar Engine]
     end
     
-    subgraph "AI/ML Layer"
-        LLM[LangChain + LLM Models]
-        ImageGen[Image Generation AI]
-        Sentiment[Sentiment Analysis]
-        TrendAI[Trend Analysis AI]
+    subgraph "Primary AI Engine (AWS Bedrock)"
+        Nova[Amazon Nova Micro - Text]
+        Titan[Amazon Titan v2:0 - Image]
     end
     
-    subgraph "Data Layer"
-        MongoDB[(MongoDB)]
-        PostgreSQL[(PostgreSQL)]
-        Redis[(Redis Cache)]
+    subgraph "Fallback AI Engine (Fail-Safe)"
+        Gemini[Google Gemini Pro - Text]
+        Pollinations[Pollinations AI - Image]
     end
     
-    subgraph "External Services"
-        Social[Social Media APIs]
-        News[News/Trend APIs]
-        CDN[Content Delivery Network]
+    subgraph "Voice Processing"
+        gTTS[Google TTS - Devanagari/Local]
+        SpeechRec[Speech Recognition]
     end
     
-    UI --> API
-    Cache --> UI
-    API --> Auth
-    API --> ContentGen
-    API --> Analytics
-    API --> Scheduler
-    API --> TrendEngine
+    UI --> Router
+    UI --> Audio
+    Router --> Sec
     
-    ContentGen --> LLM
-    ContentGen --> ImageGen
-    Analytics --> Sentiment
-    TrendEngine --> TrendAI
+    Router -->|Primary Request| Nova
+    Router -->|Primary Request| Titan
     
-    API --> MongoDB
-    API --> PostgreSQL
-    API --> Redis
+    Router -.->|Fallback on AWS Error| Gemini
+    Router -.->|Fallback on AWS Error| Pollinations
     
-    TrendEngine --> News
-    Scheduler --> Social
-    ContentGen --> CDN
+    Audio --> gTTS
+    Audio --> SpeechRec
+
 ```
 
 ### Technology Stack Details
 
-- **Frontend**: Streamlit with custom components for rich UI interactions
-- **Backend**: Python with FastAPI for REST API services
-- **AI/ML**: LangChain for LLM orchestration, Hugging Face models for multilingual support
-- **Database**: MongoDB for content storage, PostgreSQL for analytics, Redis for caching
-- **Visualization**: Plotly for interactive analytics dashboards
-- **Deployment**: Docker containers with cloud deployment (AWS/GCP/Azure)
+* **Frontend**: Streamlit with Custom CSS for responsive, mobile-friendly UI.
+* **Backend & Logic**: Python 3.9+
+* **Multi-Cloud AI**:
+* AWS Bedrock (Amazon Nova Micro, Amazon Titan Image Generator v2:0) via `boto3`.
+* Google Gemini API (`google-generativeai`) as the text fallback.
+* Pollinations AI API as the visual fallback.
+
+
+* **Voice Engine**: `gTTS` (Google Text-to-Speech) optimized for native Devanagari and regional Indian accents (`co.in`), and `SpeechRecognition`.
+* **Data & Visualization**: Pandas, NumPy, Plotly Express, Plotly Graph Objects.
+* **Security**: `python-dotenv` for strict environment variable credential shielding.
 
 ## Components and Interfaces
 
-### 1. AI Script Genius Component
+### 1. Multi-Cloud AI Router (System Controls)
 
-**Purpose**: Generate culturally appropriate multilingual scripts with tone control and smart hooks.
-
-**Core Classes**:
-```python
-class ScriptGenerator:
-    def generate_script(self, topic: str, language: str, tone: str, duration: int) -> Script
-    def add_cultural_context(self, script: Script, region: str) -> Script
-    def generate_hooks(self, topic: str, language: str) -> List[Hook]
-    def validate_grammar(self, script: Script) -> ValidationResult
-
-class LanguageModel:
-    def load_model(self, language: str) -> Model
-    def generate_text(self, prompt: str, model: Model) -> str
-    def apply_tone(self, text: str, tone: str) -> str
-
-class CulturalContextEngine:
-    def get_regional_references(self, region: str, topic: str) -> List[Reference]
-    def validate_cultural_appropriateness(self, content: str, region: str) -> bool
-```
-
-**Interfaces**:
-- REST API endpoints for script generation requests
-- WebSocket connections for real-time script editing
-- Integration with LangChain for LLM orchestration
-
-### 2. AI Visual Studio Component
-
-**Purpose**: Generate thumbnails and visuals optimized for Indian aesthetics and multiple formats.
+**Purpose**: Intelligently route requests to AWS Bedrock and seamlessly failover to Google Gemini/Open Source if API limits or network blocks occur.
 
 **Core Classes**:
+
 ```python
-class VisualGenerator:
-    def generate_thumbnail(self, script: Script, format: str) -> Visual
-    def apply_indian_aesthetics(self, visual: Visual, region: str) -> Visual
-    def create_text_overlay(self, visual: Visual, text: str, language: str) -> Visual
-    def generate_variations(self, base_visual: Visual, count: int) -> List[Visual]
+class MultiCloudEngine:
+    def load_secure_credentials(self) -> ConfigMap:
+    def get_llm_response(self, prompt: str, max_tokens: int) -> str:
+    def execute_aws_primary(self, prompt: str) -> str:
+    def execute_gemini_fallback(self, prompt: str, error: Exception) -> str:
 
-class AestheticsEngine:
-    def get_color_palette(self, region: str, topic: str) -> ColorPalette
-    def get_cultural_motifs(self, region: str) -> List[Motif]
-    def apply_typography(self, text: str, language: str) -> Typography
-
-class FormatOptimizer:
-    def resize_for_platform(self, visual: Visual, platform: str) -> Visual
-    def optimize_for_bandwidth(self, visual: Visual, quality: str) -> Visual
 ```
 
-**Interfaces**:
-- Image generation API with format specifications
-- Real-time preview system for visual editing
-- CDN integration for optimized image delivery
+### 2. AI Content Pipeline & Script Genius
 
-### 3. Bharat Analytics Hub Component
-
-**Purpose**: Provide comprehensive analytics with regional insights and sentiment analysis.
+**Purpose**: Translate complex documents into regional dialects, inject cultural slang (e.g., Puneri, Bhojpuri), and generate clickbaity hooks.
 
 **Core Classes**:
+
 ```python
-class AnalyticsEngine:
-    def collect_metrics(self, content_id: str) -> Metrics
-    def analyze_regional_performance(self, content_id: str) -> RegionalAnalytics
-    def perform_sentiment_analysis(self, comments: List[Comment]) -> SentimentResult
-    def generate_insights(self, metrics: Metrics) -> List[Insight]
+class ContentPipeline:
+    def generate_base_script(self, topic: str, language: str) -> Script:
+    def apply_cultural_nuance(self, base_script: str, region_vibe: str) -> LocalizedScript:
+    def format_for_whatsapp(self, script: str) -> BroadcastMessage:
 
-class MetricsCollector:
-    def track_engagement(self, content_id: str, platform: str) -> EngagementData
-    def collect_demographic_data(self, content_id: str) -> Demographics
-    def monitor_real_time_performance(self, content_id: str) -> RealTimeMetrics
+class ScriptGenius:
+    def generate_video_script(self, topic: str, language: str, vibe: str) -> Storyboard:
+    def generate_viral_hooks(self, topic: str, language: str, count: int) -> List[Hook]:
 
-class VisualizationEngine:
-    def create_dashboard(self, analytics: Analytics) -> Dashboard
-    def generate_charts(self, data: AnalyticsData) -> List[Chart]
-    def create_regional_heatmap(self, regional_data: RegionalData) -> Heatmap
 ```
 
-**Interfaces**:
-- Plotly-based interactive dashboards
-- Real-time data streaming for live metrics
-- Export functionality for analytics reports
+### 3. AI Visual Studio & Brand Identity Kit
 
-### 4. Trend Radar Component
-
-**Purpose**: Detect trending topics and calculate digital momentum for content strategy.
+**Purpose**: Generate 4k/8k Indian-context visuals using Titan v2:0 and synthesize niche-specific branding.
 
 **Core Classes**:
+
 ```python
-class TrendDetector:
-    def monitor_trends(self, region: str, language: str) -> List[Trend]
-    def calculate_momentum(self, trend: Trend) -> MomentumScore
-    def categorize_trends(self, trends: List[Trend]) -> CategorizedTrends
-    def generate_recommendations(self, user_profile: UserProfile, trends: List[Trend]) -> List[Recommendation]
+class VisualStudio:
+    def build_aws_titan_payload(self, prompt: str, cfg: float, seed: int) -> Dict:
+    def generate_thumbnail_aws(self, payload: Dict) -> Base64Image:
+    def generate_thumbnail_fallback(self, prompt: str) -> URLImage:
 
-class DataAggregator:
-    def collect_social_media_data(self, platforms: List[str]) -> SocialData
-    def collect_news_data(self, sources: List[str]) -> NewsData
-    def aggregate_search_trends(self, region: str) -> SearchTrends
+class BrandIdentityKit:
+    def analyze_niche_psychology(self, niche: str, target_audience: str) -> BrandProfile:
+    def generate_hex_palette(self) -> List[str]:
+    def define_brand_voice(self) -> str:
 
-class TrendAnalyzer:
-    def analyze_trend_velocity(self, trend_data: TrendData) -> Velocity
-    def predict_trend_lifecycle(self, trend: Trend) -> Lifecycle
-    def identify_emerging_trends(self, data: AggregatedData) -> List[EmergingTrend]
 ```
 
-**Interfaces**:
-- Real-time trend monitoring APIs
-- Alert system for emerging trends
-- Integration with external trend data sources
+### 4. Bharat Analytics Hub & Trend Radar
 
-### 5. Smart Content Planner Component
-
-**Purpose**: AI-powered content scheduling and calendar management with optimal timing.
+**Purpose**: Provide AI sentiment analysis of regional audiences and detect hyper-local digital momentum.
 
 **Core Classes**:
-```python
-class ContentScheduler:
-    def analyze_audience_patterns(self, user_id: str) -> AudiencePatterns
-    def recommend_posting_times(self, content: Content, patterns: AudiencePatterns) -> List[OptimalTime]
-    def schedule_content(self, content: Content, schedule: Schedule) -> ScheduledContent
-    def handle_conflicts(self, schedule: Schedule) -> ResolvedSchedule
-
-class CalendarManager:
-    def create_content_calendar(self, user_id: str, month: int, year: int) -> Calendar
-    def add_cultural_events(self, calendar: Calendar, region: str) -> Calendar
-    def optimize_content_flow(self, calendar: Calendar) -> OptimizedCalendar
-
-class PlatformIntegrator:
-    def publish_to_platform(self, content: Content, platform: str) -> PublishResult
-    def format_for_platform(self, content: Content, platform: str) -> FormattedContent
-    def track_cross_platform_performance(self, content_id: str) -> CrossPlatformMetrics
-```
-
-**Interfaces**:
-- Calendar visualization with drag-and-drop scheduling
-- Platform-specific publishing APIs
-- Automated scheduling with conflict resolution
-
-## Data Models
-
-### Core Data Structures
 
 ```python
-@dataclass
-class User:
-    user_id: str
-    email: str
-    phone: str
-    preferred_languages: List[str]
-    target_regions: List[str]
-    content_categories: List[str]
-    subscription_tier: str
-    created_at: datetime
-    last_active: datetime
+class BharatAnalytics:
+    def analyze_audience_sentiment(self, content_topic: str) -> SentimentReport:
+    def calculate_regional_split(self) -> DataFrame:
+    def generate_improvement_tips(self, sentiment: SentimentReport) -> str:
 
-@dataclass
-class Content:
-    content_id: str
-    user_id: str
-    title: str
-    script: Script
-    visuals: List[Visual]
-    language: str
-    category: str
-    status: ContentStatus
-    created_at: datetime
-    scheduled_at: Optional[datetime]
-    published_at: Optional[datetime]
+class TrendRadar:
+    def scan_local_trends(self, state: str, niche: str) -> List[Trend]:
+    def generate_content_alerts(self, trends: List[Trend]) -> Alert:
 
-@dataclass
-class Script:
-    script_id: str
-    content: str
-    language: str
-    tone: str
-    hooks: List[Hook]
-    cultural_references: List[Reference]
-    word_count: int
-    estimated_duration: int
-
-@dataclass
-class Visual:
-    visual_id: str
-    image_url: str
-    format: str  # "16:9" or "9:16"
-    dimensions: Tuple[int, int]
-    aesthetic_style: str
-    text_overlays: List[TextOverlay]
-    cultural_elements: List[str]
-
-@dataclass
-class Analytics:
-    content_id: str
-    platform_metrics: Dict[str, PlatformMetrics]
-    regional_performance: RegionalPerformance
-    sentiment_analysis: SentimentResult
-    engagement_timeline: List[EngagementPoint]
-    recommendations: List[str]
-
-@dataclass
-class Trend:
-    trend_id: str
-    topic: str
-    keywords: List[str]
-    region: str
-    language: str
-    momentum_score: float
-    category: str
-    detected_at: datetime
-    predicted_peak: datetime
-    confidence_level: float
 ```
 
-### Database Schema Design
+### 5. Smart Content Planner
 
-**MongoDB Collections** (Document Storage):
-- `users` - User profiles and preferences
-- `content` - Generated content and metadata
-- `scripts` - Script versions and edits
-- `visuals` - Visual assets and variations
-- `trends` - Detected trends and analysis
+**Purpose**: Predict optimal posting times based on specific Indian demographics.
 
-**PostgreSQL Tables** (Relational Analytics):
-- `analytics_metrics` - Time-series performance data
-- `engagement_events` - User interaction events
-- `platform_performance` - Cross-platform analytics
-- `regional_insights` - Geographic performance data
-- `sentiment_scores` - Comment sentiment analysis
-
-**Redis Cache** (Performance Optimization):
-- User session data
-- Frequently accessed content
-- Real-time trend data
-- Analytics dashboard cache
-
-## Error Handling
-
-### Error Categories and Responses
-
-**AI Generation Errors**:
-- LLM service unavailable → Fallback to cached templates
-- Image generation failure → Provide default visuals
-- Language model errors → Graceful degradation to simpler models
-
-**Data Processing Errors**:
-- Analytics calculation failures → Return partial results with warnings
-- Trend detection errors → Use cached trend data
-- Database connection issues → Implement retry logic with exponential backoff
-
-**User Interface Errors**:
-- Network connectivity issues → Enable offline mode
-- Large file uploads → Implement chunked upload with progress tracking
-- Session timeouts → Auto-save drafts and restore on reconnection
-
-**External Service Errors**:
-- Social media API failures → Queue for retry and notify user
-- CDN unavailability → Serve from backup storage
-- Third-party trend APIs down → Use internal trend analysis
-
-### Error Recovery Strategies
+**Core Classes**:
 
 ```python
-class ErrorHandler:
-    def handle_llm_error(self, error: LLMError) -> FallbackResponse
-    def handle_database_error(self, error: DatabaseError) -> RetryStrategy
-    def handle_network_error(self, error: NetworkError) -> OfflineMode
-    def log_error(self, error: Exception, context: Dict) -> None
-    def notify_user(self, error: UserFacingError) -> Notification
+class ContentPlanner:
+    def predict_optimal_timing(self, platform: str, target_audience: str) -> OptimalTime:
+    def append_to_calendar(self, entry: ScheduleEntry) -> DataFrame:
+
 ```
 
-## Testing Strategy
+### 6. AI Saarthi (Voice Co-Pilot)
 
-The testing approach combines unit tests for individual components and property-based tests for comprehensive validation of AI-generated content and system behavior.
+**Purpose**: Fully interactive multilingual AI assistant with strict native script forcing for accurate pronunciation.
 
-**Unit Testing Focus**:
-- Component integration points
-- Error handling scenarios
-- Database operations
-- API endpoint functionality
-- Cultural appropriateness validation
+**Core Classes**:
 
-**Property-Based Testing Focus**:
-- AI content generation consistency
-- Cross-platform formatting preservation
-- Analytics calculation accuracy
-- Trend detection reliability
-- Scheduling optimization correctness
+```python
+class SaarthiEngine:
+    def force_devanagari_script(self, prompt: str, lang: str) -> EnhancedPrompt:
+    def generate_assistant_response(self, query: str, lang: str) -> str:
+    def text_to_native_speech(self, text: str, lang_code: str) -> AudioStream:
 
-**Testing Configuration**:
-- Property tests run with minimum 100 iterations using Hypothesis (Python)
-- Each property test references its corresponding design property
-- Integration tests validate end-to-end user workflows
-- Performance tests ensure accessibility for low-bandwidth users
+```
 
-**Test Environment Setup**:
-- Mock external APIs for consistent testing
-- Test databases with representative multilingual data
-- Simulated network conditions for offline testing
-- Cultural appropriateness test datasets for each supported region
+## Data Models (Session State)
+
+### Core Data Structures (Streamlit Managed)
+
+```python
+@dataclass
+class ContentState:
+    genius_script: str
+    thumbnail_hooks: List[str]
+    pipe_base_script: Optional[str]
+    pipe_localized_script: Optional[str]
+    pipe_wa_summary: Optional[str]
+
+@dataclass
+class VisualState:
+    generated_thumbnail: Optional[bytes]
+    thumbnail_source: str # "AWS Titan v2:0" or "Open Source Fallback"
+    enhanced_image_prompt: str
+
+@dataclass
+class BrandState:
+    brand_kit_generated: bool
+    brand_colors: List[str]
+    brand_text: str
+
+@dataclass
+class SaarthiState:
+    jarvis_query: str
+    jarvis_answer: str
+    jarvis_audio: Optional[bytes]
+
+```
+
+## Error Handling & Resiliency
+
+### 1. The Multi-Cloud Fallback Protocol
+
+If AWS Bedrock triggers an `AccessDeniedException`, `ThrottlingException`, or `ModelNotReadyException`, the `MultiCloudEngine` catches the error silently, logs the failure, and instantly reroutes the prompt payload to the `google.generativeai` module. The user experiences slightly increased latency but ZERO application crashing.
+
+### 2. Open Source Visual Fallback
+
+If the Amazon Titan Image Generator payload fails, the system URL-encodes the base prompt and fetches an unbranded, seed-randomized image from `image.pollinations.ai`, ensuring the "AI Visual Studio" never returns a blank screen during a demo.
+
+### 3. Voice Library Degradation
+
+If `gTTS` or `SpeechRecognition` libraries fail to initialize (due to missing OS-level audio dependencies), the `GTTS_AVAILABLE` flag disables the audio player UI but keeps the Text-based AI Saarthi fully functional.
 
 ## Correctness Properties
 
-*A property is a characteristic or behavior that should hold true across all valid executions of a system—essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
+*These properties bridge the requirements from `requirements.md` to verifiable technical implementations.*
 
-### Property 1: Multilingual Script Generation Consistency
-*For any* supported language, topic, and tone combination, the AI Script Genius should generate culturally appropriate scripts in the specified language that match the requested tone and include attention-grabbing hooks within the first 15 seconds.
-**Validates: Requirements 1.1, 1.2, 1.3, 1.4**
+### Property 1: Multi-Cloud Availability
 
-### Property 2: Script Validation and Quality Assurance
-*For any* generated script, the system should validate grammatical correctness and cultural appropriateness before presenting it to users, ensuring all scripts meet quality standards.
-**Validates: Requirements 1.5**
+*For any* text generation request, if the AWS credentials are valid and Bedrock is responsive, Amazon Nova Micro MUST be used. If it fails, the system MUST return a valid string utilizing the Gemini API fallback, ensuring 100% text generation uptime.
+**Validates: Requirement 9**
 
-### Property 3: Visual Format and Aesthetic Compliance
-*For any* visual content request, the AI Visual Studio should generate thumbnails in both 16:9 and 9:16 formats that incorporate appropriate Indian aesthetic elements and provide multiple variations for user choice.
-**Validates: Requirements 2.1, 2.2, 2.4**
+### Property 2: Secure Credential Management
 
-### Property 4: Script-Visual Content Alignment
-*For any* generated script, the visual suggestions should be relevant to and complement the script content, with text overlays that are readable and culturally appropriate for the target audience.
-**Validates: Requirements 2.3, 2.5**
+*For any* initialization of the `boto3` or `genai` clients, credentials MUST be loaded strictly via `os.getenv()` mapping to a `.env` file, and hardcoded keys must not exist in the execution script.
+**Validates: Requirement 10**
 
-### Property 5: Comprehensive Analytics Data Presentation
-*For any* published content, the analytics dashboard should display all required performance metrics (views, engagement rates, shares, comments) with regional engagement patterns and geographic distribution.
-**Validates: Requirements 3.1, 3.2**
+### Property 3: Regional Localization Injection
 
-### Property 6: Sentiment Analysis Accuracy
-*For any* set of comments and feedback, the sentiment analysis should correctly categorize responses as positive, negative, or neutral with consistent classification criteria.
-**Validates: Requirements 3.3**
+*For any* localized content generation via the Content Pipeline, the AI MUST maintain the factual baseline of the document while rewriting the syntax to match the selected regional vibe (e.g., "Puneri pure").
+**Validates: Requirement 1**
 
-### Property 7: Cross-Language Performance Insights
-*For any* content published in multiple languages or regions, the analytics should provide comparative insights and actionable recommendations based on performance differences.
-**Validates: Requirements 3.4, 3.5**
+### Property 4: Image Generator Routing and Quality
 
-### Property 8: Trend Categorization and Momentum Calculation
-*For any* detected trending topic, the system should correctly categorize it by region, language, and content type while calculating accurate Digital Momentum scores.
-**Validates: Requirements 4.2, 4.3**
+*For any* visual generation request, the AWS Titan v2:0 payload MUST include standard configurations (`cfgScale: 8`, `width: 1024`, `height: 1024`) and randomize the `seed` to prevent duplicate outputs.
+**Validates: Requirement 4**
 
-### Property 9: Personalized Trend Recommendations
-*For any* user profile and content history, the trend recommendations should be personalized and relevant to the user's niche and target audience.
-**Validates: Requirements 4.4**
+### Property 5: Native Script Forcing for Voice Accuracy
 
-### Property 10: Optimal Content Scheduling
-*For any* content and audience activity data, the Smart Content Planner should recommend optimal posting times and appropriate platforms while preventing scheduling conflicts.
-**Validates: Requirements 5.1, 5.2, 5.3**
+*For any* query submitted to AI Saarthi where the target language is "Hindi" or "Marathi", the LLM prompt MUST strictly instruct the model to output exclusively in the Devanagari script to ensure the `gTTS` engine reads it with a native accent.
+**Validates: Requirement 8**
 
-### Property 11: Cultural Event-Aware Scheduling
-*For any* content scheduled during regional festivals or cultural events, the system should consider these occasions in timing optimization.
-**Validates: Requirements 5.4**
+### Property 6: Brand Identity Completeness
 
-### Property 12: User Authentication and Security
-*For any* user authentication attempt, the system should securely verify credentials and maintain session security throughout the user's interaction.
-**Validates: Requirements 6.2**
+*For any* Brand Identity generation, the regex parser MUST successfully extract exactly three valid HEX color codes (e.g., `#FFFFFF`) from the LLM output to populate the UI visual swatches.
+**Validates: Requirement 3**
 
-### Property 13: Profile-Based Recommendation Adaptation
-*For any* user profile update, the AI recommendations and content suggestions should adjust accordingly to reflect the new preferences and settings.
-**Validates: Requirements 6.3**
+### Property 7: Predictive Analytics Formatting
 
-### Property 14: Content History and Data Persistence
-*For any* user-generated content, analytics, and preferences, the system should maintain complete history for personalization and allow data export when requested.
-**Validates: Requirements 6.4**
+*For any* Smart Content Planner execution, the AI MUST return an actionable insight alongside the scheduled time, which must be successfully appended to the Pandas DataFrame `calendar_data`.
+**Validates: Requirement 5**
 
-### Property 15: Content Versioning and Language Consistency
-*For any* content editing session, the system should maintain language consistency during real-time edits, save draft versions for later continuation, and preserve both original and edited versions.
-**Validates: Requirements 7.2, 7.4, 7.5**
+### Property 8: Sentiment Dashboard Data Integrity
 
-### Property 16: Cross-Platform Content Formatting
-*For any* content published to multiple platforms, the system should automatically format content appropriately for each platform's requirements and handle platform-specific timing.
-**Validates: Requirements 8.2, 8.4**
+*For any* rendering of the Bharat Analytics Hub, the Plotly pie charts and metric components MUST successfully load and display the predefined/analyzed traffic splits without throwing rendering exceptions.
+**Validates: Requirement 6**
 
-### Property 17: Platform Integration Error Handling
-*For any* platform integration failure, the system should notify users and provide alternative publishing options while maintaining unified analytics across successful publications.
-**Validates: Requirements 8.3, 8.5**
+```
 
-### Property 18: Offline Functionality and Sync
-*For any* offline content creation session, the system should provide basic script generation and editing capabilities using cached models, then sync changes when connectivity is restored.
-**Validates: Requirements 9.2, 9.4**
-
-### Property 19: Bandwidth-Optimized Performance
-*For any* low-bandwidth connection, the system should cache frequently used resources locally and gracefully degrade non-critical functionality while maintaining essential features.
-**Validates: Requirements 9.3, 9.5**
-
-### Property 20: Data Security and Privacy
-*For any* user data and content, the system should encrypt information both in transit and at rest, permanently delete data within 30 days when requested, and provide complete user control over data sharing preferences.
-**Validates: Requirements 10.1, 10.3, 10.5** 
+```

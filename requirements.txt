@@ -4,3 +4,6 @@ numpy
 plotly
 boto3
 python-dotenv
+SpeechRecognition
+gTTS
+google-generativeai
